@@ -1,0 +1,23 @@
+{
+	"name": "@panmdaa/validate-bench",
+	"private": true,
+	"type": "module",
+	"description": "Benchmarks comparing @panmdaa/validate against zod, valibot, arktype, yup and ajv",
+	"scripts": {
+		"bench": "vitest bench",
+		"bench:verbose": "vitest bench --reporter verbose",
+		"memory": "node --expose-gc --import tsx src/memory.ts",
+		"typecheck": "tsc --noEmit"
+	},
+	"devDependencies": {
+		"@types/node": "^22.15.0",
+		"ajv": "^8.17.1",
+		"arktype": "^2.1.0",
+		"tsx": "^4.19.0",
+		"typescript": "^7.0.2",
+		"valibot": "^1.0.0",
+		"vitest": "^3.2.0",
+		"yup": "^1.6.0",
+		"zod": "^4.0.0"
+	}
+}

@@ -1,0 +1,72 @@
+{
+	"name": "@panmdaa/validate",
+	"private": false,
+	"version": "0.1.0",
+	"description": "Zero-dependency compiled TypeScript validation library — chain-style schemas, lazy compilation, tree-shaking, abort-early",
+	"license": "MIT",
+	"author": {
+		"name": "Panmdaa",
+		"email": "is.kkokotero@gmail.com",
+		"url": "https://github.com/panmdaa"
+	},
+	"keywords": [
+		"panmdaa",
+		"validation",
+		"validator",
+		"schema",
+		"zod",
+		"valibot",
+		"typescript",
+		"tree-shaking",
+		"zero-dependencies",
+		"compiled"
+	],
+	"type": "module",
+	"engines": {
+		"node": ">=18"
+	},
+	"publishConfig": {
+		"access": "public",
+		"provenance": true
+	},
+	"scripts": {
+		"build": "tsup && tsc -p tsconfig.build.json",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"typecheck": "tsc --noEmit",
+		"lint": "biome lint --write .",
+		"format": "biome format --write .",
+		"bench": "npm --prefix bench run bench",
+		"bench:memory": "npm --prefix bench run memory"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/panmdaa/validate.git"
+	},
+	"homepage": "https://github.com/panmdaa/validate#readme",
+	"bugs": {
+		"url": "https://github.com/panmdaa/validate/issues"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"types": "./dist/index.d.ts",
+	"main": "./dist/index.js",
+	"files": [
+		"dist",
+		"misc",
+		"LICENSE",
+		"README.md"
+	],
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.6",
+		"@types/node": "^22.15.0",
+		"tsup": "^8.4.0",
+		"typescript": "^7.0.2",
+		"vitest": "^3.2.7"
+	}
+}
