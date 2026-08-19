@@ -61,8 +61,10 @@ function makeCallable<In, Out>(node: SchemaNode): Schema<In, Out> {
 				kind: "nullable",
 				def: { inner: schema },
 			}),
-		default: <D>(value: D): Schema<In | undefined, Out | D> =>
-			makeCallable<In | undefined, Out | D>({
+		default: <D>(
+			value: D,
+		): Schema<In | undefined, D | Exclude<Out, undefined>> =>
+			makeCallable<In | undefined, D | Exclude<Out, undefined>>({
 				kind: "default",
 				def: { inner: schema, value },
 			}),

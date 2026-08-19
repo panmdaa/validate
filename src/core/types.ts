@@ -33,7 +33,7 @@ export interface Schema<In = unknown, Out = unknown> {
 	validate(value: unknown): Out;
 	optional(): Schema<In | undefined, Out | undefined>;
 	nullable(): Schema<In | null, Out | null>;
-	default<D>(value: D): Schema<In | undefined, Out | D>;
+	default<D>(value: D): Schema<In | undefined, D | Exclude<Out, undefined>>;
 	transform<O>(fn: (value: Out) => O): Schema<In, O>;
 	refine(
 		fn: (value: Out) => boolean | string,

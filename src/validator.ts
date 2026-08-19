@@ -1,5 +1,5 @@
 import type { Schema } from "./core/types";
-import type { CustomFn, EnumValue, LiteralValue, Shape } from "./schemas";
+import type { EnumValue, LiteralValue, Shape } from "./schemas";
 import type { ArraySchema, ObjectSchema } from "./schemas/compound";
 import {
 	arraySchema,
@@ -33,12 +33,14 @@ export const Validator = {
 	unknown: () => unknownSchema(),
 	any: () => anySchema(),
 	never: () => neverSchema(),
-	custom: <T = unknown>(fn: CustomFn, message?: string) =>
-		customSchema<T>(fn, message),
+	custom: <T = unknown>(
+		fn: (value: T) => boolean | string,
+		message?: string,
+	) => customSchema<T>(fn, message),
 	object: <S extends Shape>(shape: S): ObjectSchema<S> => objectSchema(shape),
 	array: <I extends Schema<any, any>>(item: I): ArraySchema<I> =>
 		arraySchema(item),
-	tuple: <T extends readonly Schema<any, any>[]>(items: T) =>
+	tuple: <T extends readonly Schema<any, any>[]>(items: [...T]) =>
 		tupleSchema(items),
 	union: <T extends readonly Schema<any, any>[]>(options: T) =>
 		unionSchema(options),

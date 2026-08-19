@@ -13,7 +13,10 @@ function check(c: StringCheck): (value: string) => boolean {
 		case "length":
 			return (v) => v.length === c.n;
 		case "pattern":
-			return (v) => c.re.test(v);
+			return (v) => {
+				c.re.lastIndex = 0;
+				return c.re.test(v);
+			};
 		case "email":
 			return (v) => EMAIL_RE.test(v);
 		case "url":

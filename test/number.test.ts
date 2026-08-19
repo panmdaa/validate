@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Validator } from "../src/index";
+import { firstIssue } from "./helpers";
 
 describe("number int", () => {
 	const schema = Validator.number().int();
@@ -72,7 +73,7 @@ describe("number min / max", () => {
 		expect(schema.is(0)).toBe(true);
 		expect(schema.is(1)).toBe(true);
 		expect(schema.is(-0.5)).toBe(false);
-		expect(schema.safeParse(-1).issues?.[0]?.message ?? "").toBe(
+		expect(firstIssue(schema.safeParse(-1))?.message ?? "").toBe(
 			"Number must be >= 0",
 		);
 	});
@@ -82,15 +83,15 @@ describe("number min / max", () => {
 		expect(schema.is(10)).toBe(true);
 		expect(schema.is(9.99)).toBe(true);
 		expect(schema.is(10.01)).toBe(false);
-		expect(schema.safeParse(11).issues?.[0]?.message ?? "").toBe(
+		expect(firstIssue(schema.safeParse(11))?.message ?? "").toBe(
 			"Number must be <= 10",
 		);
 	});
 
 	it("accepts custom messages", () => {
 		const schema = Validator.number().min(0, "too small").max(10, "too big");
-		expect(schema.safeParse(-1).issues?.[0]?.message).toBe("too small");
-		expect(schema.safeParse(11).issues?.[0]?.message).toBe("too big");
+		expect(firstIssue(schema.safeParse(-1))?.message).toBe("too small");
+		expect(firstIssue(schema.safeParse(11))?.message).toBe("too big");
 	});
 
 	it("supports the common range idiom", () => {
@@ -109,7 +110,7 @@ describe("number sign checks", () => {
 		expect(schema.is(1)).toBe(true);
 		expect(schema.is(0)).toBe(false);
 		expect(schema.is(-1)).toBe(false);
-		expect(schema.safeParse(0).issues?.[0]?.message).toBe(
+		expect(firstIssue(schema.safeParse(0))?.message).toBe(
 			"Number must be positive",
 		);
 	});
@@ -119,7 +120,7 @@ describe("number sign checks", () => {
 		expect(schema.is(-1)).toBe(true);
 		expect(schema.is(0)).toBe(false);
 		expect(schema.is(1)).toBe(false);
-		expect(schema.safeParse(0).issues?.[0]?.message).toBe(
+		expect(firstIssue(schema.safeParse(0))?.message).toBe(
 			"Number must be negative",
 		);
 	});
@@ -129,7 +130,7 @@ describe("number sign checks", () => {
 		expect(schema.is(0)).toBe(true);
 		expect(schema.is(1)).toBe(true);
 		expect(schema.is(-0.0001)).toBe(false);
-		expect(schema.safeParse(-1).issues?.[0]?.message).toBe(
+		expect(firstIssue(schema.safeParse(-1))?.message).toBe(
 			"Number must be non-negative",
 		);
 	});
@@ -139,14 +140,14 @@ describe("number sign checks", () => {
 		expect(schema.is(0)).toBe(true);
 		expect(schema.is(-1)).toBe(true);
 		expect(schema.is(0.0001)).toBe(false);
-		expect(schema.safeParse(1).issues?.[0]?.message).toBe(
+		expect(firstIssue(schema.safeParse(1))?.message).toBe(
 			"Number must be non-positive",
 		);
 	});
 
 	it("accepts custom messages for sign checks", () => {
 		const schema = Validator.number().positive("pos only");
-		expect(schema.safeParse(0).issues?.[0]?.message).toBe("pos only");
+		expect(firstIssue(schema.safeParse(0))?.message).toBe("pos only");
 	});
 });
 

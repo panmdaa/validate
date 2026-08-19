@@ -6,6 +6,8 @@ import {
 	Validator,
 } from "../src/index";
 
+type Equal<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+
 describe("primitive type inference", () => {
 	it("infers primitives", () => {
 		expectTypeOf<Infer<ReturnType<typeof Validator.string>>>().toEqualTypeOf<string>();
@@ -126,13 +128,13 @@ describe("compound type inference", () => {
 		expectTypeOf<Infer<typeof arr>>().toEqualTypeOf<number[]>();
 
 		const tup = Validator.tuple([Validator.string(), Validator.number()]);
-		expectTypeOf<Infer<typeof tup>>().toEqualTypeOf<[string, number]>();
+		const tupEqual: Equal<Infer<typeof tup>, [string, number]> = true;
 
 		const mixed = Validator.tuple([
 			Validator.string(),
 			Validator.number().transform((n) => String(n)),
 		]);
-		expectTypeOf<Infer<typeof mixed>>().toEqualTypeOf<[string, string]>();
+		const mixedEqual: Equal<Infer<typeof mixed>, [string, string]> = true;
 	});
 
 	it("infers unions", () => {
@@ -157,10 +159,11 @@ describe("compound type inference", () => {
 				level: Validator.number(),
 			}),
 		});
-		expectTypeOf<Infer<typeof schema>>().toEqualTypeOf<
+		const discEqual: Equal<
+			Infer<typeof schema>,
 			| { type: "user"; name: string }
 			| { type: "admin"; level: number }
-		>();
+		> = true;
 	});
 
 	it("infers records", () => {
@@ -177,7 +180,9 @@ describe("Infer on complex pipelines", () => {
 			id: Validator.number().int(),
 			email: Validator.string().email(),
 			role: Validator.enum(["admin", "user"]),
-			meta: Validator.record(Validator.string()).optional().default({}),
+			meta: Validator.record(Validator.string())
+				.optional()
+				.default({} as Record<string, string>),
 			posts: Validator.array(
 				Validator.object({
 					title: Validator.string(),

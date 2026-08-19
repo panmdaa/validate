@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Validator } from "../src/index";
+import { firstIssue } from "./helpers";
 
 describe("object schema basics", () => {
 	const schema = Validator.object({
@@ -302,14 +303,14 @@ describe("array schema", () => {
 		expect(s.is([1, 2])).toBe(true);
 		expect(s.is([1])).toBe(false);
 		expect(s.is([1, 2, 3])).toBe(false);
-		expect(s.safeParse([1]).issues?.[0]?.message).toBe(
+		expect(firstIssue(s.safeParse([1]))?.message).toBe(
 			"Array must contain exactly 2 item(s)",
 		);
 	});
 
 	it("supports custom check messages", () => {
 		const s = Validator.array(Validator.number()).min(1, "need one");
-		expect(s.safeParse([]).issues?.[0]?.message).toBe("need one");
+		expect(firstIssue(s.safeParse([]))?.message).toBe("need one");
 	});
 
 	it("validates nested arrays", () => {

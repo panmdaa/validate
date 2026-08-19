@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Validator } from "../src/index";
+import { firstIssue } from "./helpers";
 
 describe("string minLength", () => {
 	const schema = Validator.string().minLength(3);
@@ -217,7 +218,7 @@ describe("string startsWith / endsWith / includes", () => {
 		const schema = Validator.string().startsWith("foo");
 		expect(schema.is("foobar")).toBe(true);
 		expect(schema.is("barfoo")).toBe(false);
-		expect(schema.safeParse("bar").issues?.[0]?.message ?? "").toBe(
+		expect(firstIssue(schema.safeParse("bar"))?.message ?? "").toBe(
 			'String must start with "foo"',
 		);
 	});
@@ -226,7 +227,7 @@ describe("string startsWith / endsWith / includes", () => {
 		const schema = Validator.string().endsWith("bar");
 		expect(schema.is("foobar")).toBe(true);
 		expect(schema.is("barfoo")).toBe(false);
-		expect(schema.safeParse("foo").issues?.[0]?.message ?? "").toBe(
+		expect(firstIssue(schema.safeParse("foo"))?.message ?? "").toBe(
 			'String must end with "bar"',
 		);
 	});
@@ -235,7 +236,7 @@ describe("string startsWith / endsWith / includes", () => {
 		const schema = Validator.string().includes("oob");
 		expect(schema.is("foobar")).toBe(true);
 		expect(schema.is("fbar")).toBe(false);
-		expect(schema.safeParse("fbar").issues?.[0]?.message ?? "").toBe(
+		expect(firstIssue(schema.safeParse("fbar"))?.message ?? "").toBe(
 			'String must include "oob"',
 		);
 	});

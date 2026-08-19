@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ValidationError, Validator } from "../src/index";
+import { firstIssue } from "./helpers";
 
 describe("safeParse results", () => {
 	it("returns the parsed value on success", () => {
@@ -167,40 +168,40 @@ describe("validate throws ValidationError", () => {
 
 describe("issue received descriptions", () => {
 	it("describes primitive values", () => {
-		expect(Validator.string().safeParse(42).issues?.[0]?.received).toBe("42");
-		expect(Validator.string().safeParse(-1).issues?.[0]?.received).toBe("-1");
-		expect(Validator.string().safeParse(1.5).issues?.[0]?.received).toBe("1.5");
-		expect(Validator.string().safeParse(true).issues?.[0]?.received).toBe(
+		expect(firstIssue(Validator.string().safeParse(42))?.received).toBe("42");
+		expect(firstIssue(Validator.string().safeParse(-1))?.received).toBe("-1");
+		expect(firstIssue(Validator.string().safeParse(1.5))?.received).toBe("1.5");
+		expect(firstIssue(Validator.string().safeParse(true))?.received).toBe(
 			"true",
 		);
-		expect(Validator.string().safeParse(false).issues?.[0]?.received).toBe(
+		expect(firstIssue(Validator.string().safeParse(false))?.received).toBe(
 			"false",
 		);
-		expect(Validator.string().safeParse(null).issues?.[0]?.received).toBe(
+		expect(firstIssue(Validator.string().safeParse(null))?.received).toBe(
 			"null",
 		);
-		expect(Validator.string().safeParse(10n).issues?.[0]?.received).toBe("10");
-		expect(Validator.string().safeParse(NaN).issues?.[0]?.received).toBe("NaN");
+		expect(firstIssue(Validator.string().safeParse(10n))?.received).toBe("10");
+		expect(firstIssue(Validator.string().safeParse(NaN))?.received).toBe("NaN");
 	});
 
 	it("omits received when the input is undefined", () => {
-		expect(Validator.string().safeParse(undefined).issues?.[0]?.received).toBeUndefined();
+		expect(firstIssue(Validator.string().safeParse(undefined))?.received).toBeUndefined();
 	});
 
 	it("describes compound values", () => {
-		expect(Validator.string().safeParse([]).issues?.[0]?.received).toBe(
+		expect(firstIssue(Validator.string().safeParse([]))?.received).toBe(
 			"array",
 		);
-		expect(Validator.string().safeParse({}).issues?.[0]?.received).toBe(
+		expect(firstIssue(Validator.string().safeParse({}))?.received).toBe(
 			"object",
 		);
 		expect(
-			Validator.string().safeParse(new Date()).issues?.[0]?.received,
+			firstIssue(Validator.string().safeParse(new Date()))?.received,
 		).toBe("object");
 	});
 
 	it("uses the string itself for strings", () => {
-		expect(Validator.number().safeParse("hello").issues?.[0]?.received).toBe(
+		expect(firstIssue(Validator.number().safeParse("hello"))?.received).toBe(
 			"hello",
 		);
 	});

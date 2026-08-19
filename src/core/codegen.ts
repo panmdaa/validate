@@ -210,9 +210,11 @@ class Gen {
 						case "length":
 							cond = `${varName}.length !== ${c.n}`;
 							break;
-						case "pattern":
-							cond = `!${this.add(c.re)}.test(${varName})`;
+						case "pattern": {
+							const re = this.add(c.re);
+							cond = `(${re}.lastIndex = 0, !${re}.test(${varName}))`;
 							break;
+						}
 						case "email":
 							cond = `!${this.add(EMAIL_RE)}.test(${varName})`;
 							break;
@@ -418,26 +420,25 @@ class Gen {
 				for (const key of keys) {
 					this.field(key, shape[key], varName, fm, "identity");
 				}
-				this.emit(`  return ${varName};`);
-				this.emit(`}`);
+				this.emit(`} else {`);
 				const out = this.tmp("$out");
 				this.emit(`var ${out} = {};`);
 				for (const key of keys) {
 					this.field(key, shape[key], varName, fm, "build", out);
 				}
-				this.emit(`return ${out};`);
+				this.emit(`${varName} = ${out};`);
+				this.emit(`}`);
 			} else if (mode === "strip") {
 				const out = this.tmp("$out");
 				this.emit(`var ${out} = {};`);
 				for (const key of keys) {
 					this.field(key, shape[key], varName, fm, "build", out);
 				}
-				this.emit(`return ${out};`);
+				this.emit(`${varName} = ${out};`);
 			} else {
 				for (const key of keys) {
 					this.field(key, shape[key], varName, fm, "identity");
 				}
-				this.emit(`return ${varName};`);
 			}
 		} else {
 			const out = this.tmp("$out");
@@ -458,7 +459,7 @@ class Gen {
 				);
 				this.emit(`}`);
 			}
-			this.emit(`return ${out};`);
+			this.emit(`${varName} = ${out};`);
 		}
 	}
 
@@ -506,7 +507,6 @@ class Gen {
 			this.emit(`var ${c} = ${varName}[${i}];`);
 			this.leaf(def.item, c, fm, i);
 			this.emit(`}`);
-			this.emit(`return ${varName};`);
 		} else {
 			const transforms = detectTransforms(def.item);
 			const out = transforms ? this.tmp("$out") : null;
@@ -519,8 +519,7 @@ class Gen {
 			this.emit(`ctx.path.pop();`);
 			if (out !== null) this.emit(`${out}[${i}] = ${c};`);
 			this.emit(`}`);
-			if (out !== null) this.emit(`return ${out};`);
-			else this.emit(`return ${varName};`);
+			if (out !== null) this.emit(`${varName} = ${out};`);
 		}
 	}
 
@@ -552,7 +551,6 @@ class Gen {
 					this.emit(`ctx.path.pop();`);
 				}
 			}
-			this.emit(`return ${varName};`);
 		} else {
 			const out = this.tmp("$out");
 			this.emit(`var ${out} = new Array(${n});`);
@@ -561,6 +559,7 @@ class Gen {
 				this.emit(`var ${c} = ${varName}[${i}];`);
 				if (inlineLeaf(items[i]) !== null) {
 					this.leaf(items[i], c, fm, String(i));
+					this.emit(`${out}[${i}] = ${c};`);
 				} else {
 					this.emit(`ctx.path.push(${i});`);
 					this.node(items[i], c, fm);
@@ -568,31 +567,34 @@ class Gen {
 					this.emit(`${out}[${i}] = ${c};`);
 				}
 			}
-			this.emit(`return ${out};`);
+			this.emit(`${varName} = ${out};`);
 		}
 	}
 
 	union(node: SchemaNode, varName: string, fm: FM): void {
 		const def = node.def as UnionDef;
+		const label = this.tmp("$union");
+		this.emit(`${label}: {`);
 		for (let i = 0; i < def.options.length; i++) {
 			const option = def.options[i];
 			const entry = this.tmp("$entry");
 			this.emit(`var ${entry} = ctx.issues.length;`);
 			if (inlineLeaf(option) !== null) {
 				const expr = this.add(inlineLeaf(option));
-				this.emit(`if (${expr}(${varName}) === true) return ${varName};`);
+				this.emit(`if (${expr}(${varName}) === true) break ${label};`);
 			} else {
 				const ok = this.tmp("$ok");
-				const label = this.tmp("$opt");
-				this.emit(`${label}: {`);
+				const optLabel = this.tmp("$opt");
+				this.emit(`${optLabel}: {`);
 				this.emit(`var ${ok} = true;`);
-				this.node(option, varName, { kind: "soft", ok, label });
-				this.emit(`if (${ok}) return ${varName};`);
+				this.node(option, varName, { kind: "soft", ok, label: optLabel });
+				this.emit(`if (${ok}) break ${label};`);
 				this.emit(`}`);
 			}
 			this.emit(`ctx.issues.length = ${entry};`);
 		}
 		this.failStmt(fm, q("Invalid value"), q("union member"), varName);
+		this.emit(`}`);
 	}
 
 	discriminatedUnion(node: SchemaNode, varName: string, fm: FM): void {
@@ -603,19 +605,23 @@ class Gen {
 		this.failStmt(fm, q("Expected object"), q("object"), varName);
 		this.emit(`}`);
 		const tag = this.tmp("$tag");
+		const matched = this.tmp("$matched");
 		this.emit(`var ${tag} = ${varName}[${q(def.key)}];`);
+		this.emit(`var ${matched} = false;`);
 		for (const [tagValue, schema] of Object.entries(def.options)) {
 			this.emit(`if (String(${tag}) === ${q(tagValue)}) {`);
 			this.node(schema, varName, fm);
-			this.emit(`  return ${varName};`);
+			this.emit(`  ${matched} = true;`);
 			this.emit(`}`);
 		}
+		this.emit(`if (!${matched}) {`);
 		this.failStmt(
 			fm,
 			q(`Invalid discriminator value for "${def.key}"`),
 			q("known discriminator"),
 			tag,
 		);
+		this.emit(`}`);
 	}
 
 	record(node: SchemaNode, varName: string, fm: FM): void {
@@ -634,7 +640,6 @@ class Gen {
 			this.leaf(def.value, c, fm, k);
 			this.emit(`  }`);
 			this.emit(`}`);
-			this.emit(`return ${varName};`);
 		} else {
 			const transforms = detectTransforms(def.value);
 			const out = transforms ? this.tmp("$out") : null;
@@ -649,8 +654,7 @@ class Gen {
 			if (out !== null) this.emit(`  ${out}[${k}] = ${c};`);
 			this.emit(`  }`);
 			this.emit(`}`);
-			if (out !== null) this.emit(`return ${out};`);
-			else this.emit(`return ${varName};`);
+			if (out !== null) this.emit(`${varName} = ${out};`);
 		}
 	}
 

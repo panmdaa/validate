@@ -356,7 +356,7 @@ describe("custom schema", () => {
 	});
 
 	it("uses the provided custom message", () => {
-		const schema = Validator.custom((v) => v > 0, "positive please");
+		const schema = Validator.custom<number>((v) => v > 0, "positive please");
 		expect(schema.safeParse(-1)).toEqual({
 			success: false,
 			issues: [{ path: [], message: "positive please" }],
