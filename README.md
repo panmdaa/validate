@@ -357,7 +357,7 @@ src/
 └── compilers/      ← runtime backends: leaf checks, compound compilers, wrappers
 ```
 
-Every schema is a plain node `{ kind, def }`. On first use, `makeCallable` tries the **code generator** (`codegen.ts`), which emits a specialized function with the checks inlined; if generation fails, it falls back to the **interpreter** (`compile.ts`). Both are lazy and cached per schema. Leaf nodes (`string`, `number`, `boolean`, `bigint`, `literal`, `enum`, `custom`, `unknown`, `any`, `never`) compile to a single closure reused by both backends.
+Every schema is a plain node `{ kind, def }`. When a schema is created, `makeCallable` compiles it: it tries the **code generator** (`codegen.ts`), which emits a specialized function with the checks inlined; if generation fails, it falls back to the **interpreter** (`compile.ts`). Both are cached per schema. Leaf nodes (`string`, `number`, `boolean`, `bigint`, `literal`, `enum`, `custom`, `unknown`, `any`, `never`) compile to a single closure reused by both backends.
 
 ## Scripts
 
@@ -371,6 +371,10 @@ Every schema is a plain node `{ kind, def }`. On first use, `makeCallable` tries
 | `format` | Biome format (`--write`) |
 | `bench` | Run benchmarks against zod, valibot, arktype, yup and ajv |
 | `bench:memory` | Run the memory-allocation benchmark |
+
+---
+
+Full documentation lives in [`docs/`](docs/README.md) — usage, the complete API reference, error handling, type inference, and the architecture behind the library.
 
 ---
 <p align="center">
