@@ -128,12 +128,14 @@ describe("compound type inference", () => {
 		expectTypeOf<Infer<typeof arr>>().toEqualTypeOf<number[]>();
 
 		const tup = Validator.tuple([Validator.string(), Validator.number()]);
+		// biome-ignore lint/correctness/noUnusedVariables: compile-time type assertion
 		const tupEqual: Equal<Infer<typeof tup>, [string, number]> = true;
 
 		const mixed = Validator.tuple([
 			Validator.string(),
 			Validator.number().transform((n) => String(n)),
 		]);
+		// biome-ignore lint/correctness/noUnusedVariables: compile-time type assertion
 		const mixedEqual: Equal<Infer<typeof mixed>, [string, string]> = true;
 	});
 
@@ -159,6 +161,7 @@ describe("compound type inference", () => {
 				level: Validator.number(),
 			}),
 		});
+		// biome-ignore lint/correctness/noUnusedVariables: compile-time type assertion
 		const discEqual: Equal<
 			Infer<typeof schema>,
 			| { type: "user"; name: string }
